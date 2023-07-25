@@ -6,6 +6,10 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.getParams
 import androidx.lifecycle.setParams
@@ -36,6 +40,34 @@ abstract class NavViewModel<T: NavDestination>(application: Application): Androi
         setParams( params )
     }
 
-    abstract fun attachViewModel(savedInstanceState: Bundle?)
+    open fun attachViewModel(savedInstanceState: Bundle?){
 
+    }
+
+}
+
+
+
+/**
+ * 通过Hilt依赖注入来懒加载一个[NavViewModel]，
+ * 并且支持在创建后执行一些初始化操作
+ */
+inline fun <reified T> AppCompatActivity.lazyNavViewModel(
+    crossinline initializer: T.() -> Unit = {}
+): Lazy<T> where T : NavViewModel<*>, T : NavComponent<*> {
+    return lazy {
+        val viewModel :T by viewModels()
+        initializer(viewModel)
+        viewModel
+    }
+}
+
+inline fun <reified T> Fragment.lazyNavViewModel(
+    crossinline initializer: T.() -> Unit = {}
+): Lazy<T> where T : NavViewModel<*>, T : NavComponent<*> {
+    return lazy {
+        val viewModel :T by viewModels()
+        initializer(viewModel)
+        viewModel
+    }
 }
